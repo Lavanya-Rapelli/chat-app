@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Chat Application</title>
+    <script src="/socket.io/socket.io.js"></script> <!-- Include Socket.io -->
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: #4caf50;
+            margin-bottom: 20px;
+        }
+
+        .chat-container {
+            background-color: #ffffff;
+            width: 80%;
+            max-width: 800px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .chat-container h2 {
+            color: #555;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .messages {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .message {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background-color: #f1f1f1;
+        }
+
+        .message.sender {
+            background-color: #c9f7c5;
+            text-align: right;
+        }
+
+        .message.receiver {
+            background-color: #ffebcc;
+            text-align: left;
+        }
+
+        .auth-container, .chat-container {
+            width: 100%;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn-container button {
+            margin-left: 10px;
+        }
+
+    </style>
+    <script>
+        const socket = io();
+
+        // Function to send a private message
+        function sendPrivateMessage() {
+            const message = document.getElementById('message').value;
+            const receiver = document.getElementById('receiver').value;
+            socket.emit('privateMessage', { sender: 'User1', receiver, message });
+        }
+
+        // Listen for private messages from the server
+        socket.on('privateMessage', (message) => {
+            const messageContainer = document.getElementById('messages');
+            const newMessage = document.createElement('div');
+            newMessage.classList.add('message', 'receiver');
+            newMessage.textContent = `${message.sender}: ${message.message}`;
+            messageContainer.appendChild(newMessage);
+        });
+
+        // Function to join a room
+        function joinRoom() {
+            const roomId = document.getElementById('roomId').value;
+            socket.emit('joinRoom', roomId);
+        }
+
+        // Function to send message to room
+        function sendRoomMessage() {
+            const roomId = document.getElementById('roomId').value;
+            const message = document.getElementById('message').value;
+            socket.emit('roomMessage', { sender: 'User1', room: roomId, message });
+        }
+
+        // Listen for room messages
+        socket.on('roomMessage', (message) => {
+            const messageContainer = document.getElementById('messages');
+            const newMessage = document.createElement('div');
+            newMessage.classList.add('message', 'receiver');
+            newMessage.textContent = `[Room ${message.room}] ${message.sender}: ${message.message}`;
+            messageContainer.appendChild(newMessage);
+        });
+
+        // Authenticate user
+        function authenticateUser() {
+            const token = document.getElementById('token').value;
+            socket.emit('authenticate', token);
+        }
+    </script>
+</head>
+<body>
+    <h1>Real-Time Chat Application</h1>
+
+    <div class="auth-container">
+        <div class="input-group">
+            <label for="token">Enter JWT Token:</label>
+            <input type="text" id="token" placeholder="JWT Token">
+        </div>
+        <button onclick="authenticateUser()">Authenticate</button>
+    </div>
+
+    <div class="chat-container">
+        <h2>Private Chat</h2>
+        <div class="input-group">
+            <label for="receiver">Receiver's UserID:</label>
+            <input type="text" id="receiver" placeholder="Receiver's UserID">
+        </div>
+        <div class="input-group">
+            <label for="message">Type a message:</label>
+            <input type="text" id="message" placeholder="Type a message">
+        </div>
+        <button onclick="sendPrivateMessage()">Send Private Message</button>
+
+        <div id="messages" class="messages"></div>
+    </div>
+
+    <div class="chat-container">
+        <h2>Room Chat</h2>
+        <div class="input-group">
+            <label for="roomId">Enter Room ID:</label>
+            <input type="text" id="roomId" placeholder="Enter Room ID">
+        </div>
+        <button onclick="joinRoom()">Join Room</button>
+
+        <div class="input-group">
+            <label for="message">Type a message to room:</label>
+            <input type="text" id="message" placeholder="Type a message to room">
+        </div>
+        <button onclick="sendRoomMessage()">Send Message to Room</button>
+
+        <div id="messages" class="messages"></div>
+    </div>
+</body>
+</html>
