@@ -28,8 +28,8 @@ cron.schedule("* * * * *", () => {
 });
 
 app.use("/api/auth", require("./src/routes/authRoutes"));
-app.use("/api/auth/messages", require("./src/routes/messageRoutes"));
-app.use("/api/rooms", require("./src/routes/roomRoutes"));
+// app.use("/api/auth/messages", require("./src/routes/messageRoutes"));
+// app.use("/api/rooms", require("./src/routes/roomRoutes"));
 
 
 app.use(errorHandler);
