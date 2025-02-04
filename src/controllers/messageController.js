@@ -2,6 +2,26 @@
 const Message = require('../models/messageModel');
 
 // Send private message
+const createMessage = async (req, res) => {
+    try {
+        const { sender, receiver, message } = req.body;
+
+        // Ensure all fields are provided
+        if (!sender || !receiver || !message) {
+            return res.status(400).send('Sender, receiver, and message are required.');
+        }
+
+        // Create a new message record
+        const newMessage = await Message.create({ sender, receiver, message });
+
+        // Respond with the newly created message
+        res.status(201).json(newMessage);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error creating message');
+    }
+};
+
 const sendPrivateMessage = async (req, res) => {
     const { sender, receiver, message } = req.body;
     try {
@@ -50,4 +70,4 @@ const getPrivateMessages = async (req, res) => {
     }
 };
 
-module.exports = { sendPrivateMessage, sendRoomMessage, getRoomMessages, getPrivateMessages };
+module.exports = { createMessage, sendPrivateMessage, sendRoomMessage, getRoomMessages, getPrivateMessages };
